@@ -59,6 +59,10 @@ app.get('/', (req, res) => {
     res.send(html);
 });
 
+app.get('/api/admin/users', function (req, res) {
+    res.json(['User1', 'user2', 'user3', 'user4']);
+});
+
 app.get('/logout', function (req, res) {
     console.log('logging out');
     req.logout();
@@ -83,7 +87,7 @@ app.get('/protected', ensureAuthenticated, function (req, res) {
 
 
 
-var server = app.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function () {
+var server = app.listen(process.env.PORT || 3001, process.env.IP || "0.0.0.0", function () {
     console.log('The app listening at http://%s:%s', server.address().address, server.address().port);
 });
 
