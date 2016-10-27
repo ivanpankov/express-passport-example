@@ -21,10 +21,10 @@ passport.deserializeUser(function (user, done) {
 
 
 passport.use(new GithubStrategy({
-    clientID: config.CLIENT_ID,
-    clientSecret: config.GITHUB_CLIENT_SECRET,
-    callbackURL: config.CALLBACK_URL
-},
+        clientID: config.CLIENT_ID,
+        clientSecret: config.GITHUB_CLIENT_SECRET,
+        callbackURL: config.CALLBACK_URL
+    },
     function (accessToken, refreshToken, profile, done) {
         return done(null, profile);
     }
@@ -46,10 +46,10 @@ app.get('*', (req, res, next) => {
 
 // routes
 app.get('/', (req, res) => {
-    var html = "<ul>\
-        <li><a href='/auth/github'>GitHub</a></li>\
-        <li><a href='/logout'>logout</a></li>\
-    </ul>";
+    var html = `<ul>
+        <li><a href='/auth/github'>GitHub</a></li>
+        <li><a href='/logout'>logout</a></li>
+    </ul>`;
 
     if (req.isAuthenticated()) {
         html += "<p>authenticated as user:</p>";
@@ -65,11 +65,15 @@ app.get('/logout', function (req, res) {
     res.redirect('/');
 });
 
+app.get('/api/admin/users', function (req, res) {
+    res.json(['user1', 'user2', 'user3']);
+});
+
 // we will call this to start the GitHub Login process
 app.get('/auth/github', passport.authenticate('github'));
 
 // GitHub will call this URL
-app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/' }),
+app.get('/auth/github/callback', passport.authenticate('github', {failureRedirect: '/'}),
     function (req, res) {
         console.log(req.hostname, ' :', req.query);
         res.redirect('/');
@@ -79,8 +83,6 @@ app.get('/auth/github/callback', passport.authenticate('github', { failureRedire
 app.get('/protected', ensureAuthenticated, function (req, res) {
     res.send("access granted. secure stuff happens here");
 });
-
-
 
 
 var server = app.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function () {
