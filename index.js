@@ -80,6 +80,12 @@ app.get('/auth/github/callback', passport.authenticate('github', {failureRedirec
     }
 );
 
+app.post('/auth/github/profile', passport.authenticate('github'), function() {
+    if (req.isAuthenticated()) {
+        res.json(req.user);
+    }
+});
+
 app.get('/protected', ensureAuthenticated, function (req, res) {
     res.send("access granted. secure stuff happens here");
 });
