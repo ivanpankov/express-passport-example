@@ -75,16 +75,30 @@ app.get('/auth/github', passport.authenticate('github'));
 // GitHub will call this URL
 app.get('/auth/github/callback', passport.authenticate('github', {failureRedirect: '/'}),
     function (req, res) {
-        console.log(req.hostname, ' :', req.query);
-        res.redirect('/');
+
+        var profile = {
+            displayName: req.user.displayName,
+            photo: req.user.photos[0].value
+        };
+
+        var jwt = {
+            blah: 'sdrgergcregrtg'
+        };
+
+        var message = JSON.stringify({
+            type:'access_token_github',
+            access_token: 'ieruhcoeruihg ioreug',
+            expires_in:  '23455',
+            profile: profile
+        });
+
+
+        var accepted_origin = "http://localhost:3001/";
+        var js = `window.opener.postMessage(${message}, \'${accepted_origin}\');window.close()`;
+
+        res.send(`<script>${js}</script>`);
     }
 );
-
-app.post('/auth/github/profile', passport.authenticate('github'), function() {
-    if (req.isAuthenticated()) {
-        res.json(req.user);
-    }
-});
 
 app.get('/protected', ensureAuthenticated, function (req, res) {
     res.send("access granted. secure stuff happens here");
