@@ -1,10 +1,24 @@
 var express = require('express');
+var path = require('path');
+var logger = require('morgan');
+var mongoose = require('mongoose');
+var config = require('./config');
+var passport = require('passport');
+var GithubStrategy = require('passport-github').Strategy;
+
+mongoose.connect(config.MONGO_URL);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function () {
+    // we're connected!
+    console.log("Connected correctly to database");
+});
+
 var app = express();
 var session = require('express-session');
 
-var passport = require('passport');
-var GithubStrategy = require('passport-github').Strategy;
-var config = require('./config');
+app.use(logger('dev'));
+
 
 passport.serializeUser(function (user, done) {
     // placeholder for custom user serialization
