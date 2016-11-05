@@ -1,19 +1,10 @@
 var passport = require('passport');
 var GithubStrategy = require('passport-github').Strategy;
+var User = require('./models/user');
 var config = require('./config');
 
-passport.serializeUser(function (user, done) {
-    // placeholder for custom user serialization
-    // null is for errors
-    done(null, user);
-});
-
-passport.deserializeUser(function (user, done) {
-    // placeholder for custom user deserialization.
-    // maybe you are going to get the user from mongo by id?
-    // null is for errors
-    done(null, user);
-});
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 passport.use(new GithubStrategy({
         clientID: config.github.CLIENT_ID,
@@ -21,6 +12,27 @@ passport.use(new GithubStrategy({
         callbackURL: config.github.CALLBACK_URL
     },
     function (accessToken, refreshToken, profile, done) {
-        return done(null, profile);
+        User.findOne({ OauthId: profile.id }, function(err, user) {
+            if(err) {
+                return done(err);
+            } else if (user !== null) {
+                done(null, user);
+            } else {
+                user = new User({
+                    username: profile.displayName
+                });
+
+                user.OauthId = profile.id;
+                user.OauthToken = accessToken;
+                user.save(function(err) {
+                    if(err) {
+                        console.log(err); // handle errors!
+                    } else {
+                        console.log("saving user ...");
+                        done(null, user);
+                    }
+                });
+            }
+        });
     }
 ));
