@@ -6,7 +6,7 @@ var config = require('./config');
 var passport = require('passport');
 var authenticate = require('./authenticate');
 
-mongoose.connect(config.database.MONGO_URL);
+mongoose.connect(config.database.URL);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
@@ -64,26 +64,17 @@ app.get('/auth/github/callback', passport.authenticate('github', {failureRedirec
     }
 );
 
-app.get('/protected', ensureAuthenticated, function (req, res) {
-    res.send("access granted. secure stuff happens here");
-});
+app.get('/auth/facebook', passport.authenticate('facebook'));
+
+app.get('/auth/facebook/callback', passport.authenticate('facebook', {failureRedirect: '/'}),
+    function (req, res) {
+
+        res.json(req.user);
+    }
+);
+
 
 
 var server = app.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function () {
     console.log('The app listening at http://%s:%s', server.address().address, server.address().port);
 });
-
-// Simple middleware to ensure user is authenticated.
-// Use this middleware on any resource that needs to be protected.
-// If the request is authenticated (typically via a persistent login session),
-// the request will proceed.  Otherwise, the user will be redirected to the
-// login page.
-function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-        // req.user is available for use here
-        next();
-    } else {
-        // denied. redirect to login
-        res.redirect('/')
-    }
-}
