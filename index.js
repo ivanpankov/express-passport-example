@@ -4,9 +4,9 @@ var logger = require('morgan');
 var mongoose = require('mongoose');
 var config = require('./config');
 var passport = require('passport');
-var GithubStrategy = require('passport-github').Strategy;
+var authenticate = require('./authenticate');
 
-mongoose.connect(config.MONGO_URL);
+mongoose.connect(config.database.MONGO_URL);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
@@ -15,69 +15,17 @@ db.once('open', function () {
 });
 
 var app = express();
-var session = require('express-session');
 
 app.use(logger('dev'));
-
-
-passport.serializeUser(function (user, done) {
-    // placeholder for custom user serialization
-    // null is for errors
-    done(null, user);
-});
-
-passport.deserializeUser(function (user, done) {
-    // placeholder for custom user deserialization.
-    // maybe you are going to get the user from mongo by id?
-    // null is for errors
-    done(null, user);
-});
-
-
-passport.use(new GithubStrategy({
-        clientID: config.CLIENT_ID,
-        clientSecret: config.GITHUB_CLIENT_SECRET,
-        callbackURL: config.CALLBACK_URL
-    },
-    function (accessToken, refreshToken, profile, done) {
-        return done(null, profile);
-    }
-));
-
-
-app.use(session({
-    secret: config.SESSION_SECRET,
-    saveUninitialized: true,
-    resave: true
-}));
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.get('*', (req, res, next) => {
     console.log(req.path);
     next();
 });
 
-// routes
-app.get('/', (req, res) => {
-    var html = `<ul>
-        <li><a href='/auth/github'>GitHub</a></li>
-        <li><a href='/logout'>logout</a></li>
-    </ul>`;
 
-    if (req.isAuthenticated()) {
-        html += "<p>authenticated as user:</p>";
-        html += "<pre>" + JSON.stringify(req.user, null, 4) + "</pre>";
-    }
 
-    res.send(html);
-});
-
-app.get('/logout', function (req, res) {
-    console.log('logging out');
-    req.logout();
-    res.redirect('/');
-});
 
 app.get('/api/admin/users', function (req, res) {
     res.json(['user1', 'user2', 'user3']);
